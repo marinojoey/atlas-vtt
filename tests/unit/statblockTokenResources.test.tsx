@@ -26,6 +26,12 @@ describe('per-token statblock controls', () => {
     expect(handlers.onUpdateToken).not.toHaveBeenCalled();
   });
 
+  it('leaves the name off an unnamed meter', () => {
+    render(<StatblockTokenResources {...actions()} monster={monster} tokens={tokens.slice(0, 1)} named={false} />);
+    expect(screen.queryByRole('button', { name: /^Locate/ })).toBeNull();
+    expect(screen.getByRole('group', { name: 'Acid Burrower #1' })).toBeTruthy();
+  });
+
   it('updates damage and stress pips on only the chosen token', () => {
     const handlers = actions();
     const { rerender } = render(<StatblockTokenResources {...handlers} monster={monster} tokens={tokens} />);

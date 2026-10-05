@@ -15,7 +15,7 @@ import { rollHitPoints } from '../../services/statblockHitPoints';
 import { StatblockRenderer, type StatblockPortrait } from './statblock/StatblockRenderer';
 import { TokenPickerModal } from '../../packages/components/token-picker/TokenPickerModal';
 import { TokenStatblockLinkService } from '../../services/TokenStatblockLinkService';
-import { StatblockTokenResources, type StatblockTokenActions } from './statblock/StatblockTokenResources';
+import { LocateTokenButton, loneToken, StatblockTokenResources, type StatblockTokenActions } from './statblock/StatblockTokenResources';
 import type { StatblockEditApi } from './statblock/statblockEditContext';
 import { isEditableNote, writeStatblockValue } from '../../services/statblockEditing';
 import { useBestiaryRevision } from '../hooks/useBestiaryRevision';
@@ -38,6 +38,8 @@ interface FantasyStatblockProps {
   editable?: boolean;
   className?: string;
   tokenActions?: StatblockTokenActions;
+  /** Starts minimized to what a fight needs. */
+  minimizable?: boolean;
 }
 
 /** Signature of the values mirrored into the statblock, for change detection. */
@@ -56,6 +58,7 @@ export function FantasyStatblock({
   editable = false,
   className,
   tokenActions,
+  minimizable,
   viewId: suppliedViewId,
 }: FantasyStatblockProps): React.JSX.Element {
   const context = useContext(AtlasUIContext);
@@ -210,6 +213,8 @@ export function FantasyStatblock({
   }, [key, monster, tokenActions]);
 
   const api = getFantasyStatblocksApi();
+  // A minimized statblock with one token carries its locate button beside the name, not on the meter.
+  const lone = tokenActions && minimizable ? loneToken(tokens) : undefined;
 
   if (!api) {
     return (
@@ -245,9 +250,14 @@ export function FantasyStatblock({
         sourcePath={notePath}
         edit={edit}
         portrait={portrait}
+        headingAction={tokenActions && lone && (
+          <LocateTokenButton id={lone.id} label={lone.name || monster.name || ''}
+            onLocateToken={tokenActions.onLocateToken} onHoverToken={tokenActions.onHoverToken} />
+        )}
         replaceVitals={Boolean(tokenActions)}
+        minimizable={minimizable}
         footer={tokenActions && tokens.length > 0 ? (
-          <StatblockTokenResources monster={monster} layout={layout} tokens={tokens} {...tokenActions} />
+          <StatblockTokenResources monster={monster} layout={layout} tokens={tokens} named={!lone} {...tokenActions} />
         ) : undefined}
         {...(editable ? { onAssignToken: assignToken } : {})}
       />

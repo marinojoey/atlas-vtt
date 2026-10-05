@@ -16,6 +16,7 @@ import { LabelTooltip } from '../../packages/components/primitives/tooltip';
 import { addTokenHighlight, zoomToTokenWithHighlight } from '../../pixi/utils/tokenHighlight';
 import { toTokenVitals } from '../../services/statblockVitalsSync';
 import { useMapResources } from '../../resources/useMapResources';
+import { useAtlasSettings } from '../../keyboard/useMapHotkeys';
 import { findCreatureForNotePath } from '../../services/FantasyStatblocksService';
 import { resolveStatblockNote } from '../../services/statblockNoteSource';
 import { runInBackground } from '../../utils/backgroundTask';
@@ -230,6 +231,7 @@ export default function DMScreen({ isOpen, onClose }: DMScreenProps) {
   const { app, view } = useAtlasUI();
   const updateToken = useAtlasStore((state) => state.updateToken);
   const definitions = useMapResources();
+  const minimizeStatblocks = useAtlasSettings(SettingsService.forApp(app))?.getSetting('minimizeStatblocks') ?? false;
   const [statblocks, setStatblocks] = useState<Map<string, LoadedStatblock>>(new Map());
   const [loading, setLoading] = useState(true);
   const [contentReady, setContentReady] = useState(false);
@@ -476,6 +478,7 @@ export default function DMScreen({ isOpen, onClose }: DMScreenProps) {
                         notePath={path}
                         app={app}
                         tokens={statblock.tokens.map(toTokenVitals)}
+                        minimizable={minimizeStatblocks}
                         tokenActions={{
                           definitions,
                           onUpdateToken: (id, updates) => updateToken(id, updates),

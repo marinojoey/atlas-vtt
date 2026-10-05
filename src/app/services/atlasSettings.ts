@@ -42,6 +42,8 @@ export interface AtlasSettings {
   experimental: Partial<Record<ExperimentalFeatureId, boolean>>;
   /** The statblock beside its note: whether its first-visit hint was dismissed. */
   statblockPane: { hintDismissed: boolean };
+  /** The DM screen opens statblocks minimized to what a fight needs. */
+  minimizeStatblocks: boolean;
   /** The GM's toolbar layout, only what differs from the default; read with `getToolbarLayout`. */
   toolbar: StoredToolbarLayout;
   localPlayerView: {
@@ -74,6 +76,7 @@ export const DEFAULT_SETTINGS: AtlasSettings = {
   diceFont: DEFAULT_DICE_LOOK.font,
   experimental: {},
   statblockPane: { hintDismissed: false },
+  minimizeStatblocks: false,
   toolbar: {},
   localPlayerView: {
     // UI element visibility defaults

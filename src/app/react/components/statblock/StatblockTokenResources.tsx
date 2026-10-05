@@ -20,6 +20,8 @@ export interface StatblockTokenResourcesProps extends StatblockTokenActions {
   monster: StatblockMonster;
   layout: StatblockLayout;
   tokens: TokenVitals[];
+  /** Off when the statblock's name carries the locate button instead. */
+  named?: boolean;
 }
 function ResourceControl({ quantity, onChange }: {
   quantity: TokenQuantity;
@@ -68,10 +70,43 @@ function ResourceControl({ quantity, onChange }: {
   );
 }
 
-export function StatblockTokenResources({ monster, layout, definitions, tokens, onLocateToken, onHoverToken, onUpdateToken }: StatblockTokenResourcesProps): React.JSX.Element {
+type LocatedToken = TokenVitals & { id: string };
+
+function located(tokens: TokenVitals[]): LocatedToken[] {
+  return tokens.filter((token): token is LocatedToken => Boolean(token.id));
+}
+
+/** The statblock's token when it has only one on the map. */
+export function loneToken(tokens: TokenVitals[]): LocatedToken | undefined {
+  const identified = located(tokens);
+  return identified.length === 1 ? identified[0] : undefined;
+}
+
+interface LocateTokenButtonProps {
+  id: string;
+  label: string;
+  onLocateToken: (id: string) => void;
+  onHoverToken?: ((id: string) => void) | undefined;
+  children?: React.ReactNode;
+}
+
+/** Finds a token on the map. Without children it is an icon button. */
+export function LocateTokenButton({ id, label, onLocateToken, onHoverToken, children }: LocateTokenButtonProps): React.JSX.Element {
+  return (
+    <LabelTooltip label={t('statblock.locate', { label })}>
+      <Button className={children ? 'atlas-sb-token-name' : 'atlas-sb-heading-action'} variant="ghost" size={children ? 'sm' : 'icon'}
+        onMouseEnter={() => onHoverToken?.(id)} onFocus={() => onHoverToken?.(id)}
+        onClick={() => onLocateToken(id)}>
+        {children}<LocateFixed aria-hidden="true" />
+      </Button>
+    </LabelTooltip>
+  );
+}
+
+export function StatblockTokenResources({ monster, layout, definitions, tokens, onLocateToken, onHoverToken, onUpdateToken, named = true }: StatblockTokenResourcesProps): React.JSX.Element {
   const listRef = useRef<HTMLDivElement>(null);
   const entryLabelId = useId();
-  const identified = tokens.filter((token): token is TokenVitals & { id: string } => Boolean(token.id));
+  const identified = located(tokens);
   const scrollable = identified.length > 3;
   const used = new Set<number>();
   // Reserve real map badges before allocating fallback numbers to legacy/colliding entries.
@@ -109,14 +144,13 @@ export function StatblockTokenResources({ monster, layout, definitions, tokens, 
     <div ref={listRef} className="atlas-sb-token-list" data-scrollable={scrollable}
       onKeyDown={(event) => event.stopPropagation()}>
       {entries.map(({ token, label }) => (
-        <div key={token.id} className="atlas-sb-token-entry" role="group" aria-labelledby={`${entryLabelId}-${token.id}`}>
-          <LabelTooltip label={t('statblock.locate', { label })}>
-            <Button className="atlas-sb-token-name" variant="ghost" size="sm"
-              onMouseEnter={() => onHoverToken?.(token.id)} onFocus={() => onHoverToken?.(token.id)}
-              onClick={() => onLocateToken(token.id)}>
-              <span id={`${entryLabelId}-${token.id}`}>{label}</span><LocateFixed aria-hidden="true" />
-            </Button>
-          </LabelTooltip>
+        <div key={token.id} className="atlas-sb-token-entry" role="group"
+          {...(named ? { 'aria-labelledby': `${entryLabelId}-${token.id}` } : { 'aria-label': label })}>
+          {named && (
+            <LocateTokenButton id={token.id} label={label} onLocateToken={onLocateToken} onHoverToken={onHoverToken}>
+              <span id={`${entryLabelId}-${token.id}`}>{label}</span>
+            </LocateTokenButton>
+          )}
           {tokenQuantities(monster, layout, token, definitions).map((quantity) => (
             <ResourceControl key={quantity.key} quantity={quantity}
               onChange={(current) => onUpdateToken(token.id, resourceUpdate(token, quantity.key, withCurrent(quantity.value, current), false))} />

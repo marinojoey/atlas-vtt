@@ -1,6 +1,7 @@
 import type { Translation } from '../../types';
 
 export const statblock: Translation = {
+  'statblock.armorClassShort': 'КД',
   'statblock.assignToken': 'Назначить токен',
   'statblock.assignTokenHint': 'Назначить токен статблоку',
   'statblock.changeToken': 'Сменить токен статблока',
@@ -10,9 +11,13 @@ export const statblock: Translation = {
   'statblock.editValue': 'Изменить значение',
   'statblock.increase': 'Увеличить: {label}',
   'statblock.locate': 'Найти {label} на карте',
+  'statblock.maxHitPoints': 'Макс. хиты',
   'statblock.pip': '{label}: {n} из {max}',
   'statblock.pipDamage': '{label}, урон: {n} из {max}',
   'statblock.pluginMissing': 'Установите и включите плагин Fantasy Statblocks, чтобы видеть статблоки.',
+  'statblock.showLess': 'Свернуть',
+  'statblock.showMore': 'Показать всё',
+  'statblock.speedShort': 'Скор.',
   'statblock.spellcasting': 'Использование заклинаний',
   'statblock.traitDescription': 'описание черты',
   'statblock.traitName': 'название черты',

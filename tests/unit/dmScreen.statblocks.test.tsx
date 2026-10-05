@@ -1,5 +1,5 @@
 import React from 'react';
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TFile } from 'obsidian';
 
@@ -21,13 +21,14 @@ vi.mock('../../src/app/react/ViewStoreContext', () => ({
 }));
 
 import DMScreen from '../../src/app/react/components/DMScreen';
+import { SettingsService } from '../../src/app/services/SettingsService';
 
 const view = {};
 const legacyPath = 'statblocks/New Creature 32.md';
 const creaturePath = 'statblocks/Acid Burrower.md';
 const fencePath = 'statblocks/Inline Creature.md';
 const files = [legacyPath, creaturePath, fencePath].map((path) => new TFile(path));
-const creature = { name: 'Acid Burrower', path: creaturePath, hp: 8, stress: 3 };
+const creature = { name: 'Acid Burrower', path: creaturePath, ac: 12, hp: 8, stress: 3 };
 const app = {
   workspace: { on: vi.fn(), offref: vi.fn() },
   vault: {
@@ -117,5 +118,21 @@ describe('DM screen token actions', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Locate Acid Burrower #2 on map' }));
     expect(zoomToTokenWithHighlight).toHaveBeenCalledWith(view, '2', { x: 200, y: 50 });
     await waitFor(() => expect(onClose).toHaveBeenCalled());
+  });
+});
+
+describe('DM screen minimized statblocks', () => {
+  it('follows the setting, with a lone token located from beside the name', async () => {
+    const settings = new SettingsService(app as never);
+    const { container } = showDMScreen([legacyPath, creaturePath]);
+    expect(await screen.findByRole('button', { name: 'Locate Acid Burrower #1 on map' })).toBeTruthy();
+    expect(container.querySelector('.atlas-sb-summary-vitals')).toBeNull();
+
+    act(() => settings.setSetting('minimizeStatblocks', true));
+    expect(container.querySelector('.atlas-sb-summary-vitals')?.textContent).toContain('12');
+    expect(container.querySelector('[data-type="heading"] > .atlas-sb-heading-action')).not.toBeNull();
+    expect(screen.queryByRole('button', { name: 'Locate Acid Burrower #1 on map' })).toBeNull();
+
+    act(() => settings.setSetting('minimizeStatblocks', false));
   });
 });

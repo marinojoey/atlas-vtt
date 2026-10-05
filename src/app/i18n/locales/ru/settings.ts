@@ -1,6 +1,9 @@
 import type { Translation } from '../../types';
 
 export const settings: Translation = {
+  'settings.dmScreen.heading': 'Экран мастера',
+  'settings.dmScreen.minimizeStatblocks': 'Сворачивать статблоки',
+  'settings.dmScreen.minimizeStatblocksDesc': 'Показывать только имя, КД, макс. хиты, скорость, модификаторы характеристик и действия. Стрелка внизу статблока показывает остальное.',
   'settings.hotkeys.assignFailed': 'Не удалось назначить сочетание',
   'settings.hotkeys.clear': 'Очистить сочетание',
   'settings.hotkeys.defaultSuffix': '{group} · По умолчанию: {key}',

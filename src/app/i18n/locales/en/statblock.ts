@@ -1,6 +1,7 @@
 import type { Message } from '../../types';
 
 export const statblock = {
+  'statblock.armorClassShort': 'AC',
   'statblock.assignToken': 'Assign token',
   'statblock.assignTokenHint': 'Assign a token to this statblock',
   'statblock.changeToken': 'Change token for this statblock',
@@ -10,9 +11,13 @@ export const statblock = {
   'statblock.editValue': 'Edit value',
   'statblock.increase': 'Increase {label}',
   'statblock.locate': 'Locate {label} on map',
+  'statblock.maxHitPoints': 'Max HP',
   'statblock.pip': '{label} {n} of {max}',
   'statblock.pipDamage': '{label} damage {n} of {max}',
   'statblock.pluginMissing': 'Install and enable the Fantasy Statblocks plugin to preview statblocks.',
+  'statblock.showLess': 'Show less',
+  'statblock.showMore': 'Show more',
+  'statblock.speedShort': 'SP',
   'statblock.spellcasting': 'Spellcasting',
   'statblock.traitDescription': 'trait description',
   'statblock.traitName': 'trait name',

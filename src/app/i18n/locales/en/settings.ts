@@ -1,6 +1,9 @@
 import type { Message } from '../../types';
 
 export const settings = {
+  'settings.dmScreen.heading': 'DM screen',
+  'settings.dmScreen.minimizeStatblocks': 'Minimize statblocks',
+  'settings.dmScreen.minimizeStatblocksDesc': 'Show only name, AC, max HP, speed, ability modifiers and actions. The arrow at the bottom of each statblock shows the rest.',
   'settings.hotkeys.assignFailed': 'Could not assign shortcut',
   'settings.hotkeys.clear': 'Clear shortcut',
   'settings.hotkeys.defaultSuffix': '{group} · Default: {key}',

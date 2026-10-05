@@ -1,7 +1,8 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { StatblockRenderer } from '../../src/app/react/components/statblock/StatblockRenderer';
+import { LocateTokenButton } from '../../src/app/react/components/statblock/StatblockTokenResources';
 import type {
   StatblockItem,
   StatblockLayout,
@@ -326,5 +327,54 @@ describe('hit points marker', () => {
 
     const marked = [...container.querySelectorAll('[data-hit-points]')].map((el) => el.textContent);
     expect(marked).toEqual([expect.stringContaining('2d6'), expect.stringContaining('4d8')]);
+  });
+});
+
+describe('minimized statblock', () => {
+  const layout = layoutOf(
+    { type: 'group', id: 'top', nested: [
+      { type: 'heading', id: 'h', properties: ['name'], size: 1 },
+      { type: 'subheading', id: 'sub', properties: ['type'] },
+    ] },
+    { type: 'property', id: 'ac', properties: ['ac'], display: 'Armor Class' },
+    { type: 'table', id: 'st', properties: ['stats'], headers: ['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha'], calculate: true },
+    { type: 'traits', id: 't', properties: ['traits'], conditioned: true },
+    { type: 'traits', id: 'a', properties: ['actions'], heading: 'Actions', conditioned: true },
+  );
+  const monster = {
+    name: 'Ghoul', type: 'Undead', ac: '13 (natural armor)', hp: '22 (5d8)', speed: '30 ft.',
+    stats: [13, 15, 10, 7, 10, 6], traits: [{ name: 'Keen Smell', desc: 'Advantage.' }], actions: [{ name: 'Bite', desc: '1d6.' }],
+  };
+  const text = (container: HTMLElement, selector: string): string | undefined => container.querySelector(selector)?.textContent ?? undefined;
+
+  it('shows the name, a summary and the actions until the arrow reveals the rest', () => {
+    const { container, getByRole } = render(<StatblockRenderer layout={layout} monster={monster} minimizable />);
+    expect(text(container, 'h1')).toBe('Ghoul');
+    expect(text(container, '.atlas-sb-summary-vitals')).toBe('AC:13Max HP:22SP:30 ft.');
+    expect(text(container, '.atlas-sb-summary-modifiers')).toBe('Str:+1Dex:+2Con:+0Int:-2Wis:+0Cha:-2');
+    expect(container.textContent).toContain('Bite');
+    expect(container.textContent).not.toContain('Undead');
+    expect(container.textContent).not.toContain('Keen Smell');
+    expect(container.textContent).not.toContain('Actions');
+
+    fireEvent.click(getByRole('button', { expanded: false }));
+    expect(container.textContent).toContain('Actions');
+    expect(container.querySelector('.atlas-sb-summary-vitals')).toBeNull();
+    expect(container.textContent).toContain('Undead');
+    expect(container.textContent).toContain('Keen Smell');
+  });
+
+  it('puts a heading action beside the name', () => {
+    const onLocateToken = vi.fn();
+    const { container } = render(<StatblockRenderer layout={layout} monster={monster} minimizable
+      headingAction={<LocateTokenButton id="t1" label="Ghoul" onLocateToken={onLocateToken} />} />);
+    fireEvent.click(container.querySelector('[data-type="heading"] > .atlas-sb-heading-action')!);
+    expect(onLocateToken).toHaveBeenCalledWith('t1');
+  });
+
+  it('shows the full statblock without an arrow for a creature without an armor class', () => {
+    const { container } = render(<StatblockRenderer layout={layout} monster={{ ...monster, ac: undefined }} minimizable />);
+    expect(container.querySelector('.atlas-sb-minimize-toggle')).toBeNull();
+    expect(container.textContent).toContain('Keen Smell');
   });
 });

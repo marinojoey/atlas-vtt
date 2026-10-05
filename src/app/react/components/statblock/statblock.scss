@@ -90,6 +90,22 @@ $portrait-size: 72px;
   text-wrap: balance;
 }
 
+// A name with an action beside it keeps to one line.
+.atlas-sb-item[data-type='heading']:has(> .atlas-sb-heading-action) {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+
+  .atlas-sb-heading-row,
+  .atlas-sb-heading { min-width: 0; }
+
+  .atlas-sb-heading {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .atlas-sb-subheading {
   margin-top: 2px;
   color: var(--text-muted);
@@ -272,6 +288,46 @@ $portrait-size: 72px;
   color: var(--text-muted);
   font-size: $font-ui-smaller;
   line-height: var(--line-height-normal);
+}
+
+// ── Minimized ───────────────────────────────────────────────────────────────
+// AC, maximum HP and speed sit beside the portrait; the modifiers span the card
+// below it, spread like the ability table.
+.atlas-sb-summary-vitals,
+.atlas-sb-summary-modifiers {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: $spacing-m;
+  font-variant-numeric: tabular-nums;
+
+  .atlas-sb-property-name { margin-right: $spacing-xs; }
+}
+
+.atlas-sb-summary-modifiers {
+  clear: both;
+  justify-content: space-between;
+  column-gap: $spacing-xs;
+  margin-top: $spacing-xs;
+}
+
+// Reveals what a minimized statblock leaves out.
+.atlas-sb-minimize-toggle {
+  display: flex;
+  clear: both;
+  margin: $spacing-s auto 0;
+  color: var(--text-muted);
+
+  svg {
+    width: $icon-s;
+    height: $icon-s;
+    transition: transform $transition-normal $transition-ease-in-out;
+  }
+
+  &[aria-expanded='true'] svg { transform: rotate(180deg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    svg { transition: none; }
+  }
 }
 
 // Shown in place of a statblock when the plugin or creature is unavailable.

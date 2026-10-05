@@ -1,3 +1,7 @@
+## New
+
+- Minimize DM screen statblocks to name, AC, max HP, speed, ability modifiers and actions, with an arrow that shows the rest. Turn it on in Atlas settings under DM screen.
+
 ## Improved
 
 - Simplified how token artwork and collection rules update.

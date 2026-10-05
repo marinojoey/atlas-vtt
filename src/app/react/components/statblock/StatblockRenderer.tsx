@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { App } from 'obsidian';
+import { ChevronDown } from 'lucide-react';
 import type { StatblockItem, StatblockLayout, StatblockMonster } from './statblockTypes';
 import { runCallback } from './layoutCallbacks';
 import { isVisible, slugify } from './statblockUtils';
+import { minimizeStatblock, StatblockSummary } from './StatblockSummary';
 import { StatblockEditContext, type StatblockEditApi } from './statblockEditContext';
 import {
   HeadingBlock,
@@ -17,6 +19,8 @@ import {
   TraitsBlock,
 } from './StatblockBlocks';
 import { TokenPortrait } from '../../../packages/components/shared/TokenPortrait';
+import { Button } from '../../../packages/components/primitives/button';
+import { t } from '../../../i18n';
 import './statblock.scss';
 
 export interface StatblockPortrait {
@@ -38,9 +42,13 @@ export interface StatblockRendererProps {
   onAssignToken?: (() => void) | undefined;
   /** The token this statblock is shown for, pinned to the top right. */
   portrait?: StatblockPortrait | undefined;
+  /** Shown beside the creature's name, which then keeps to one line. */
+  headingAction?: React.ReactNode;
   /** The DM screen supplies editable per-token resources in place of imported trackers. */
   footer?: React.ReactNode;
   replaceVitals?: boolean | undefined;
+  /** Starts minimized to what a fight needs, with an arrow at the bottom for the rest. */
+  minimizable?: boolean | undefined;
 }
 
 interface BlockViewProps extends Omit<StatblockRendererProps, 'layout'> {
@@ -144,7 +152,7 @@ export function StatblockBlockView(props: BlockViewProps): React.JSX.Element | n
 
   switch (item.type) {
     case 'heading':
-      return wrap(<HeadingBlock {...blockProps} />);
+      return wrap(<><HeadingBlock {...blockProps} />{props.headingAction}</>);
     case 'subheading':
       return wrap(<SubheadingBlock {...blockProps} />);
     case 'property':
@@ -227,13 +235,33 @@ export function StatblockRenderer({
   edit,
   onAssignToken,
   portrait,
+  headingAction,
   footer,
   replaceVitals,
+  minimizable,
 }: StatblockRendererProps): React.JSX.Element {
+  const [expanded, setExpanded] = useState(false);
   const blocks = useMemo(() => layout.blocks ?? [], [layout]);
+  const minimized = useMemo(
+    () => (minimizable ? minimizeStatblock(blocks, monster) : null),
+    [minimizable, blocks, monster],
+  );
   const editApi = useMemo(
     (): StatblockEditApi => edit ?? { editable: false, commit: () => undefined },
     [edit],
+  );
+  const view = (item: StatblockItem): React.JSX.Element => (
+    <StatblockBlockView
+      key={item.id}
+      item={item}
+      monster={monster}
+      app={app}
+      sourcePath={sourcePath}
+      resolveLayout={resolveLayout}
+      onAssignToken={onAssignToken}
+      replaceVitals={replaceVitals}
+      headingAction={headingAction}
+    />
   );
 
   return (
@@ -246,19 +274,20 @@ export function StatblockRenderer({
           {portrait && (
             <TokenPortrait className="atlas-sb-portrait" src={portrait.src} alt="" ringColor={portrait.ringColor} showRing={portrait.showRing} />
           )}
-          {blocks.map((item) => (
-            <StatblockBlockView
-              key={item.id}
-              item={item}
-              monster={monster}
-              app={app}
-              sourcePath={sourcePath}
-              resolveLayout={resolveLayout}
-              onAssignToken={onAssignToken}
-              replaceVitals={replaceVitals}
-            />
-          ))}
+          {minimized && !expanded ? (
+            <>
+              {minimized.heading && view(minimized.heading)}
+              <StatblockSummary vitals={minimized.vitals} modifiers={minimized.modifiers} />
+              {minimized.actions.map(view)}
+            </>
+          ) : blocks.map(view)}
           {footer}
+          {minimized && (
+            <Button variant="ghost" size="icon" className="atlas-sb-minimize-toggle" aria-expanded={expanded}
+              aria-label={t(expanded ? 'statblock.showLess' : 'statblock.showMore')} onClick={() => setExpanded(!expanded)}>
+              <ChevronDown aria-hidden="true" />
+            </Button>
+          )}
         </div>
       </div>
     </StatblockEditContext.Provider>

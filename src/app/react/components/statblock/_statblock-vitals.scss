@@ -100,6 +100,17 @@ $pip-row-height: 24px;
   & + & { border-top: $border-width-s solid var(--background-modifier-border); }
 }
 
+// A lone token's locate button, beside the statblock's name.
+.atlas-sb-heading-action.btn {
+  flex-shrink: 0;
+  width: $button-height-s;
+  height: $button-height-s;
+  color: var(--text-muted);
+
+  svg { width: $icon-s; height: $icon-s; }
+  &:hover { color: var(--text-accent); }
+}
+
 .atlas-sb-token-name.btn {
   @include atlas-sb-label;
   display: flex;
